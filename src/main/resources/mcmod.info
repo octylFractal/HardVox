@@ -1,0 +1,16 @@
+[
+{
+  "modid": "hardvox",
+  "name": "Hard Vox",
+  "description": "The mod of hard vox. Voxel editor.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["kenzierocks"],
+  "credits": "The Forge and FML guys, for being a^w^e^some",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
