@@ -4,19 +4,19 @@ class VMShared {
 
     static final class Vec {
 
-        final int keyX;
-        final int keyY;
-        final int keyZ;
+        final int x;
+        final int y;
+        final int z;
 
-        Vec(int keyX, int keyY, int keyZ) {
-            this.keyX = keyX;
-            this.keyY = keyY;
-            this.keyZ = keyZ;
+        Vec(int x, int y, int z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
         }
 
         @Override
         public int hashCode() {
-            return (keyX * 1301081) ^ (keyY * 15487309) ^ (keyZ * 746773);
+            return (x * 1301081) ^ (y * 15487309) ^ (z * 746773);
         }
 
         @Override
@@ -28,7 +28,7 @@ class VMShared {
                 return false;
             }
             Vec v = (Vec) obj;
-            return v.keyX == keyX && v.keyY == keyY && v.keyZ == keyZ;
+            return v.x == x && v.y == y && v.z == z;
         }
 
     }

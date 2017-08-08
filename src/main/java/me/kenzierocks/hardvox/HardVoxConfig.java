@@ -31,9 +31,27 @@ public final class HardVoxConfig {
 
         @Config.Comment("Number of operations per tick, per session.")
         @Config.RangeInt(min = 0)
+        @Config.LangKey(HardVox.MODID + ".config.entry.operations.pertick")
         public int operationsPerTick = 10000;
 
+        @Config.Comment({ "Number of operations before sending a message stating progress.",
+                "This is approximate, the actual number of operations between will usually be above this number.",
+                "Can be zero, to disable." })
+        @Config.RangeInt(min = 0)
+        @Config.LangKey(HardVox.MODID + ".config.entry.operations.permessage")
+        public int operationsPerMessage = 100000;
+
         private Operations() {
+        }
+
+    }
+
+    @Config.LangKey(HardVox.MODID + ".config.title.debug")
+    public static final Debug debug = new Debug();
+
+    public static class Debug {
+
+        private Debug() {
         }
 
     }

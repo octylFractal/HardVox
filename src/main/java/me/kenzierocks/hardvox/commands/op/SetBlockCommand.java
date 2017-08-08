@@ -26,11 +26,18 @@ public class SetBlockCommand extends HVCommand {
     @Override
     protected void execute(HVSession session, CommandArgSet args) throws CommandException {
         computeBlockData(args).thenAccept(vm -> {
-            try {
-                setBlock(session, vm);
-            } catch (CommandException e) {
-                session.owner.sendMessage(Texts.hardVoxError(e.getMessage()));
-            }
+            session.server.addScheduledTask(() -> {
+                try {
+                    setBlock(session, vm);
+                } catch (Throwable e) {
+                    Texts.error(session.owner, e);
+                }
+            });
+        }).exceptionally(t -> {
+            session.server.addScheduledTask(() -> {
+                Texts.error(session.owner, t);
+            });
+            return null;
         });
     }
 

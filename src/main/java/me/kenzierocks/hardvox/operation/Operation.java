@@ -3,6 +3,7 @@ package me.kenzierocks.hardvox.operation;
 import me.kenzierocks.hardvox.block.BlockData;
 import me.kenzierocks.hardvox.region.chunker.RegionChunk.PositionIterator;
 import me.kenzierocks.hardvox.vector.MutableVectorMap;
+import me.kenzierocks.hardvox.vector.VectorMap;
 import net.minecraft.world.World;
 
 /**
@@ -11,6 +12,6 @@ import net.minecraft.world.World;
  */
 public interface Operation {
 
-    int performOperation(PositionIterator chunk, World world, MutableVectorMap<BlockData> blockMap);
+    int performOperation(PositionIterator chunk, World world, VectorMap<BlockData> blockMap, MutableVectorMap<Boolean> hitStore);
 
 }

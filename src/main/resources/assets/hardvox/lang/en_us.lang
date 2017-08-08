@@ -2,6 +2,8 @@ hardvox.config.title.general=General
 hardvox.config.entry.wand.selection=Selection Wand
 
 hardvox.config.title.operations=Operations
+hardvox.config.entry.operations.pertick=Operations Per Tick
 
+hardvox.config.title.debug=Debug Options
 
 hardvox.config.title.gui=HardVox Config

@@ -17,6 +17,7 @@ import me.kenzierocks.hardvox.region.chunker.RegionChunker;
 import me.kenzierocks.hardvox.region.chunker.RegionChunkers;
 import me.kenzierocks.hardvox.region.selector.BoxRegionSelector;
 import me.kenzierocks.hardvox.region.selector.RegionSelector;
+import me.kenzierocks.hardvox.vector.VecBridge;
 import me.kenzierocks.hardvox.vector.VectorMap;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -35,8 +36,8 @@ public class HVSession {
     public HVSession(MinecraftServer server, ICommandSender owner) {
         this.server = server;
         this.owner = owner;
-        this.operationManager = new OperationManager();
         world = owner.getEntityWorld();
+        this.operationManager = new OperationManager(this);
     }
 
     public void performFullRegionCommand(Function<RegionSelector<?, ?>, String> commandAction) throws CommandException {
@@ -70,7 +71,7 @@ public class HVSession {
             runOperation(r, blockMap).thenAccept(totalOps -> {
                 owner.sendMessage(Texts.hardVoxMessage("Operation completed! " + totalOps + " operation(s) performed!"));
             }).exceptionally(e -> {
-                owner.sendMessage(Texts.hardVoxError("Error: " + e.getMessage()));
+                Texts.error(owner, e);
                 return null;
             });
             return "Running operation, please wait...";
@@ -79,8 +80,8 @@ public class HVSession {
 
     public CompletableFuture<Integer> runOperation(Region region, VectorMap<BlockData> blockMap) {
         RegionChunker.BoundRegionChunker rc = RegionChunkers.forRegion(region).bind(region);
-        Vector3i min = region.getMinimum().div(16);
-        Vector3i max = region.getMaximum().div(16);
+        Vector3i min = VecBridge.toChunk(region.getMinimum());
+        Vector3i max = VecBridge.toChunk(region.getMaximum());
         Stream<Vector3i> vectors = IntStream.rangeClosed(min.getX(), max.getX())
                 .mapToObj(x -> IntStream.rangeClosed(min.getZ(), max.getZ())
                         .mapToObj(z -> new Vector3i(x, 0, z)))

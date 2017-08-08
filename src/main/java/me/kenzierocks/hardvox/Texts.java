@@ -1,5 +1,6 @@
 package me.kenzierocks.hardvox;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
@@ -13,6 +14,12 @@ public class Texts {
 
     public static ITextComponent hardVoxError(String messageText) {
         return new TextComponentString(messageText).setStyle(new Style().setColor(TextFormatting.RED));
+    }
+
+    public static void error(ICommandSender target, Throwable e) {
+        String msg = "An unexpected error occured, check the server console: " + e.getMessage();
+        e.printStackTrace();
+        target.sendMessage(hardVoxError(msg));
     }
 
 }

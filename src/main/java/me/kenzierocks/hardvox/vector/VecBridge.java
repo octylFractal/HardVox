@@ -10,6 +10,11 @@ import net.minecraft.util.math.Vec3i;
 
 public class VecBridge {
 
+    public static Vector3i toChunk(Vector3i v) {
+        // NOT EQUAL TO DIVIDING BY 16!
+        return new Vector3i(v.getX() >> 4, v.getY() >> 4, v.getZ() >> 4);
+    }
+
     public static Vector3d toFlow(Vec3d mc) {
         return new Vector3d(mc.x, mc.y, mc.z);
     }

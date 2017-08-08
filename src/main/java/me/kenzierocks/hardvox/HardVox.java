@@ -8,6 +8,7 @@ import me.kenzierocks.hardvox.commands.CommandModule;
 import me.kenzierocks.hardvox.commands.op.OperationCommands;
 import me.kenzierocks.hardvox.commands.region.RegionCommands;
 import me.kenzierocks.hardvox.region.SelectionListener;
+import me.kenzierocks.hardvox.session.SessionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -15,6 +16,7 @@ import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
 
 @Mod(modid = HardVox.MODID, version = HardVox.VERSION, acceptedMinecraftVersions = "1.12", useMetadata = true,
@@ -51,5 +53,14 @@ public class HardVox {
                 new RegionCommands(),
                 new OperationCommands());
         modules.forEachRemaining(m -> m.addCommands(event::registerServerCommand));
+    }
+
+    @EventHandler
+    public void serverStopping(FMLServerStoppingEvent event) {
+        // cancel running tasks
+        SessionManager.getInstance().getAllSessions().forEachRemaining(sess -> {
+            sess.operationManager.cancelTasks();
+        });
+        SessionManager.getInstance().clearAllSessions();
     }
 }

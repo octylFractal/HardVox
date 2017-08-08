@@ -5,6 +5,7 @@ import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -13,23 +14,32 @@ import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.ImmutableList;
 
 import me.kenzierocks.hardvox.HardVoxConfig;
+import me.kenzierocks.hardvox.Texts;
 import me.kenzierocks.hardvox.block.BlockData;
 import me.kenzierocks.hardvox.region.chunker.RegionChunk;
 import me.kenzierocks.hardvox.region.chunker.RegionChunk.PositionConsumer;
 import me.kenzierocks.hardvox.region.chunker.RegionChunk.PositionIterator;
 import me.kenzierocks.hardvox.region.chunker.RegionChunker.BoundRegionChunker;
-import me.kenzierocks.hardvox.vector.MutableVectorMap;
-import me.kenzierocks.hardvox.vector.OverlayVectorMap;
+import me.kenzierocks.hardvox.session.HVSession;
+import me.kenzierocks.hardvox.vector.ChunkDataStore;
+import me.kenzierocks.hardvox.vector.OptimizedVectorMap;
 import me.kenzierocks.hardvox.vector.VectorMap;
+import me.kenzierocks.hardvox.vector.codec.BooleanCodec;
+import me.kenzierocks.hardvox.vector.codec.OptimizedVectorMapCodec;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class OperationManager {
 
+    private static final OptimizedVectorMapCodec<Boolean> CODEC = new OptimizedVectorMapCodec<>(BooleanCodec.INSTANCE);
+
+    private final HVSession parent;
     private final List<Operation> operations;
 
     private OMTask runningOp = null;
 
-    public OperationManager() {
+    public OperationManager(HVSession parent) {
+        this.parent = parent;
         ImmutableList.Builder<Operation> ops = ImmutableList.builder();
 
         ops.add(new OpSetBasicBlock());
@@ -78,10 +88,18 @@ public class OperationManager {
      */
     public void runTasks() {
         if (runningOp != null) {
-            runningOp.tick();
             if (runningOp.done) {
                 runningOp = null;
+            } else {
+                runningOp.tick();
             }
+        }
+    }
+
+    public void cancelTasks() {
+        if (runningOp != null) {
+            runningOp.stop();
+            runningOp = null;
         }
     }
 
@@ -93,11 +111,11 @@ public class OperationManager {
         private final Set<Vector3i> vectors;
         private final BoundRegionChunker regionChunker;
         private final World world;
-        private final MutableVectorMap<BlockData> blockMap;
-
-        private final int savedMaxOps = HardVoxConfig.operations.operationsPerTick;
+        private final VectorMap<BlockData> blockMap;
+        private final ChunkDataStore<OptimizedVectorMap<Boolean>> blockHitChunkData;
 
         private int totalOperations;
+        private int lastOperations;
         private int operationIndex = 0;
         private Iterator<Vector3i> chunkLocations;
         private OMRegionChunkIterator blockLocations;
@@ -110,7 +128,13 @@ public class OperationManager {
             this.vectors = chunkLocations.collect(toImmutableSet());
             this.regionChunker = regionChunker;
             this.world = world;
-            this.blockMap = OverlayVectorMap.create(blockMap);
+            this.blockMap = blockMap;
+            this.blockHitChunkData = new ChunkDataStore<>(CODEC);
+        }
+
+        void stop() {
+            done = true;
+            blockHitChunkData.close();
         }
 
         public void tick() {
@@ -121,7 +145,7 @@ public class OperationManager {
                 }
             } catch (Exception e) {
                 future.completeExceptionally(e);
-                done = true;
+                stop();
                 return;
             }
             if (done) {
@@ -131,7 +155,7 @@ public class OperationManager {
 
         private boolean runOneOp() {
             if (operationIndex >= manager.operations.size()) {
-                done = true;
+                stop();
                 return true;
             }
             Operation o = manager.operations.get(operationIndex);
@@ -139,7 +163,8 @@ public class OperationManager {
                 chunkLocations = vectors.iterator();
             }
             // iterate over all chunks
-            while (opsThisRound < savedMaxOps) {
+            int maxOps = HardVoxConfig.operations.operationsPerTick;
+            while (opsThisRound < maxOps) {
                 if (blockLocations == null) {
                     if (!chunkLocations.hasNext()) {
                         // loop again to fill the entire tick
@@ -148,12 +173,35 @@ public class OperationManager {
                         return false;
                     }
                     RegionChunk chunk = regionChunker.getChunk(chunkLocations.next());
-                    blockLocations = new OMRegionChunkIterator(chunk.iterator(), savedMaxOps);
+                    blockLocations = new OMRegionChunkIterator(chunk.getX(), chunk.getZ(), chunk.iterator(), maxOps);
                 }
                 blockLocations.currentOps = opsThisRound;
 
+                // pre-load chunk
+                BlockPos pos = new BlockPos(blockLocations.x, 0, blockLocations.z);
+                world.getChunkFromBlockCoords(pos);
+
+                // pre-load map
+                blockHitChunkData.preload(pos.getX(), pos.getZ());
+                Optional<OptimizedVectorMap<Boolean>> mapOpt = blockHitChunkData.get(pos.getX(), pos.getZ());
+                OptimizedVectorMap<Boolean> blockHits = mapOpt
+                        .orElseGet(OptimizedVectorMap::create);
+
                 // should drain blockLocations
-                totalOperations += o.performOperation(blockLocations, world, blockMap);
+                totalOperations += o.performOperation(blockLocations, world, blockMap, blockHits);
+
+                int opsPerMessage = HardVoxConfig.operations.operationsPerMessage;
+                if (opsPerMessage != 0 && totalOperations - lastOperations > opsPerMessage) {
+                    // round down
+                    int totalOpsPM = totalOperations - (totalOperations % opsPerMessage);
+                    manager.parent.owner.sendMessage(Texts.hardVoxMessage(totalOpsPM + " operations(s) performed so far..."));
+                    lastOperations = totalOpsPM;
+                }
+
+                if (!mapOpt.isPresent()) {
+                    // put back map if needed
+                    blockHitChunkData.put(pos.getX(), pos.getZ(), blockHits);
+                }
 
                 // update ops
                 opsThisRound = blockLocations.currentOps;
@@ -167,11 +215,15 @@ public class OperationManager {
 
         private static final class OMRegionChunkIterator implements PositionIterator {
 
+            private final int x;
+            private final int z;
             private final PositionIterator delegate;
             private final int maxOps;
             private int currentOps;
 
-            public OMRegionChunkIterator(PositionIterator delegate, int maxOps) {
+            public OMRegionChunkIterator(int x, int z, PositionIterator delegate, int maxOps) {
+                this.x = x;
+                this.z = z;
                 this.delegate = delegate;
                 this.maxOps = maxOps;
             }

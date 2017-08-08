@@ -2,11 +2,20 @@ package me.kenzierocks.hardvox.vector;
 
 import java.util.Optional;
 
+import me.kenzierocks.hardvox.block.BlockData;
+
 /**
  * An overlay on top of another map. Unless a specific element has been set or
  * removed in this map, delegates to the other map.
  */
 public class OverlayVectorMap<V> implements MutableVectorMap<V> {
+
+    public static MutableVectorMap<BlockData> wrapIfNeeded(VectorMap<BlockData> blockMap) {
+        if (blockMap instanceof MutableVectorMap) {
+            return (MutableVectorMap<BlockData>) blockMap;
+        }
+        return create(blockMap);
+    }
 
     public static <V> OverlayVectorMap<V> create(VectorMap<V> delegate) {
         return new OverlayVectorMap<>(delegate);

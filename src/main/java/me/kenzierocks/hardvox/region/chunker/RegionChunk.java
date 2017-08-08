@@ -26,4 +26,8 @@ public interface RegionChunk {
 
     PositionIterator iterator();
 
+    int getX();
+
+    int getZ();
+
 }

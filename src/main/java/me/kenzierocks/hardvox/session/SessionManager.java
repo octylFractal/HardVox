@@ -38,4 +38,8 @@ public class SessionManager {
         return sessionCache.values().iterator();
     }
 
+    public void clearAllSessions() {
+        sessionCache.clear();
+    }
+
 }

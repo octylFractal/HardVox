@@ -13,18 +13,23 @@ import com.flowpowered.math.vector.Vector3i;
 import com.google.common.collect.ImmutableList;
 
 import me.kenzierocks.hardvox.region.Region;
+import me.kenzierocks.hardvox.vector.VecBridge;
 
 public abstract class BaseRegionChunker<REGION extends Region> implements RegionChunker<REGION> {
 
     private static final class BRC implements RegionChunk {
 
-        public static BRC fromStream(Stream<Vector3i> vectors) {
-            return new BRC(vectors.collect(toImmutableList()));
+        public static BRC fromStream(int x, int z, Stream<Vector3i> vectors) {
+            return new BRC(x, z, vectors.collect(toImmutableList()));
         }
 
+        private final int x;
+        private final int z;
         private final List<Vector3i> vectors;
 
-        private BRC(Iterable<Vector3i> vectors) {
+        private BRC(int x, int z, Iterable<Vector3i> vectors) {
+            this.x = x;
+            this.z = z;
             this.vectors = ImmutableList.copyOf(vectors);
         }
 
@@ -45,6 +50,16 @@ public abstract class BaseRegionChunker<REGION extends Region> implements Region
                     return iterator.hasNext();
                 }
             };
+        }
+
+        @Override
+        public int getX() {
+            return x;
+        }
+
+        @Override
+        public int getZ() {
+            return z;
         }
 
     }
@@ -80,10 +95,12 @@ public abstract class BaseRegionChunker<REGION extends Region> implements Region
         int maxY = region.getMaximum().getY();
         int minZ = region.getMinimum().getZ();
         int maxZ = region.getMaximum().getZ();
-        return (cx, cz) -> BRC.fromStream(
+        int yDiff = maxY - minY + 1;
+        return (cx, cz) -> BRC.fromStream(cx, cz,
                 chunkAxis(cx, minX, maxX).mapToObj(x -> {
                     return chunkAxis(cz, minZ, maxZ).mapToObj(z -> {
-                        return IntStream.rangeClosed(minY, maxY)
+                        return IntStream.iterate(maxY, y -> y - 1)
+                                .limit(yDiff)
                                 .mapToObj(y -> {
                                     if (isInWorld(x, y, z) && isInRegion(region, x, y, z)) {
                                         return new Vector3i(x, y, z);
@@ -100,8 +117,8 @@ public abstract class BaseRegionChunker<REGION extends Region> implements Region
 
     @Override
     public Stream<RegionChunk> getChunks(REGION region) {
-        Vector3i min = region.getMinimum().div(16);
-        Vector3i max = region.getMaximum().div(16);
+        Vector3i min = VecBridge.toChunk(region.getMinimum());
+        Vector3i max = VecBridge.toChunk(region.getMaximum());
         RCCreator regionChunk = getRCCreator(region);
 
         return IntStream.rangeClosed(min.getX(), max.getX())
