@@ -1,6 +1,7 @@
 package me.kenzierocks.hardvox.session;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import net.minecraft.command.ICommandSender;
@@ -31,6 +32,10 @@ public class SessionManager {
 
     public HVSession getSession(MinecraftServer server, ICommandSender owner) {
         return sessionCache.computeIfAbsent(cacheKey(owner), k -> new HVSession(server, owner));
+    }
+
+    public Iterator<HVSession> getAllSessions() {
+        return sessionCache.values().iterator();
     }
 
 }

@@ -11,4 +11,8 @@ public class Texts {
         return new TextComponentString(messageText).setStyle(new Style().setColor(TextFormatting.LIGHT_PURPLE));
     }
 
+    public static ITextComponent hardVoxError(String messageText) {
+        return new TextComponentString(messageText).setStyle(new Style().setColor(TextFormatting.RED));
+    }
+
 }

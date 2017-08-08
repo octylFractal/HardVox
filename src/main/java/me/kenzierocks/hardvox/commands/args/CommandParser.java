@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import me.kenzierocks.hardvox.Texts;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
 
@@ -31,6 +32,9 @@ public class CommandParser {
     public CommandParser markOptionalStartingWith(CommandArgument<?> arg) {
         int index = arguments.indexOf(arg);
         checkArgument(index >= 0, "argument not present in parser");
+        for (int i = index; i < arguments.size(); i++) {
+            checkArgument(!(arguments.get(i) instanceof FlagArg), "flag args cannot be in the post-optional-mark area");
+        }
         optionalDivisor = index;
         return this;
     }
@@ -40,6 +44,10 @@ public class CommandParser {
     }
 
     public boolean isArgumentOptional(CommandArgument<?> arg) {
+        if (arg instanceof FlagArg) {
+            // flags are always optional
+            return true;
+        }
         return arguments.indexOf(arg) >= optionalDivisor;
     }
 
@@ -68,13 +76,21 @@ public class CommandParser {
     public CommandArgSet parse(String usage, ParserContext context) throws CommandException {
         ImmutableMap.Builder<CommandArgument<?>, Object> argMap = ImmutableMap.builder();
         if (context.text.length < optionalDivisor) {
+            context.sender.sendMessage(Texts.hardVoxError("Not enough arguments provided."));
             throw new WrongUsageException(usage);
         }
-        for (int i = 0; i < context.text.length; i++) {
-            CommandArgument<?> arg = arg(i);
+        for (int i = 0, argI = 0; i < context.text.length; i++, argI++) {
+            CommandArgument<?> arg = arg(argI);
+            if (arg == null) {
+                context.sender.sendMessage(Texts.hardVoxError("Not enough arguments provided."));
+                throw new WrongUsageException(usage);
+            }
             ArgumentContext argCtx = context.contextAt(i);
             if (arg.validText(argCtx)) {
                 argMap.put(arg, arg.convert(argCtx));
+            } else if (arg instanceof FlagArg) {
+                // skip flag argument
+                i--;
             } else {
                 throw new WrongUsageException("Hey, argument " + arg.getName() + " isn't formatted like that!");
             }

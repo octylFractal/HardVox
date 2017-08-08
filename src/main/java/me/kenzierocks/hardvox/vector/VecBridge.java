@@ -1,4 +1,4 @@
-package me.kenzierocks.hardvox;
+package me.kenzierocks.hardvox.vector;
 
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;

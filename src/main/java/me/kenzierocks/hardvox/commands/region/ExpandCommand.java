@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.Iterators;
 
-import me.kenzierocks.hardvox.VecBridge;
 import me.kenzierocks.hardvox.commands.HVCommand;
 import me.kenzierocks.hardvox.commands.args.ArgumentContext;
 import me.kenzierocks.hardvox.commands.args.BaseArg;
@@ -16,6 +15,7 @@ import me.kenzierocks.hardvox.commands.args.CommandArguments;
 import me.kenzierocks.hardvox.commands.args.CommandParser;
 import me.kenzierocks.hardvox.region.selector.RegionSelector;
 import me.kenzierocks.hardvox.session.HVSession;
+import me.kenzierocks.hardvox.vector.VecBridge;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;

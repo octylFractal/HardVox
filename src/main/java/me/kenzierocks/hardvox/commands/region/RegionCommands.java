@@ -19,6 +19,7 @@ public class RegionCommands implements CommandModule {
         registerCommand.accept(new ShiftCommand("shift"));
         registerCommand.accept(new ExpandCommand("expand"));
         registerCommand.accept(new ContractCommand("contract"));
+        registerCommand.accept(new SelectionWandCommand());
     }
 
     private void setPositionOne(HVSession session, Vector3i pos) {

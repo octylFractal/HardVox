@@ -1,12 +1,12 @@
 package me.kenzierocks.hardvox.commands.region;
 
-import me.kenzierocks.hardvox.VecBridge;
 import me.kenzierocks.hardvox.commands.HVCommand;
 import me.kenzierocks.hardvox.commands.args.CommandArgSet;
 import me.kenzierocks.hardvox.commands.args.CommandArgument;
 import me.kenzierocks.hardvox.commands.args.CommandArguments;
 import me.kenzierocks.hardvox.commands.args.CommandParser;
 import me.kenzierocks.hardvox.session.HVSession;
+import me.kenzierocks.hardvox.vector.VecBridge;
 import net.minecraft.command.CommandException;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.EnumFacing;

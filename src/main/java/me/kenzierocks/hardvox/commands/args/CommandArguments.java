@@ -3,6 +3,8 @@ package me.kenzierocks.hardvox.commands.args;
 import com.flowpowered.math.vector.Vector2i;
 import com.flowpowered.math.vector.Vector3i;
 
+import me.kenzierocks.hardvox.block.BlockData;
+import me.kenzierocks.hardvox.vector.VectorMap;
 import net.minecraft.util.EnumFacing;
 
 public final class CommandArguments {
@@ -21,6 +23,14 @@ public final class CommandArguments {
 
     public static CommandArgument<EnumFacing> direction(String name) {
         return new DirectionArg(name);
+    }
+
+    public static CommandArgument<VectorMap<BlockData>> blockPattern(String name) {
+        return new BlockPatternArg(name);
+    }
+
+    public static CommandArgument<Boolean> flag(String name) {
+        return new FlagArg(name);
     }
 
     private CommandArguments() {

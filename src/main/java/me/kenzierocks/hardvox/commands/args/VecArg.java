@@ -20,7 +20,7 @@ class VecArg<V extends Vectori> extends BaseArg<V> {
     private final int dimensions;
     private final Function<VectorNi, V> vectorConstructor;
 
-    public VecArg(String name, int dimensions, Function<VectorNi, V> vectorConstructor) {
+    VecArg(String name, int dimensions, Function<VectorNi, V> vectorConstructor) {
         super(name);
         this.dimensions = dimensions;
         this.vectorConstructor = vectorConstructor;

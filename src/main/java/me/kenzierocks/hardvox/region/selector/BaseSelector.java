@@ -1,8 +1,8 @@
 package me.kenzierocks.hardvox.region.selector;
 
-import me.kenzierocks.hardvox.VecBridge;
 import me.kenzierocks.hardvox.region.Region;
 import me.kenzierocks.hardvox.region.data.RegionData;
+import me.kenzierocks.hardvox.vector.VecBridge;
 import net.minecraft.util.EnumFacing;
 
 abstract class BaseSelector<REGION extends Region, DATA extends RegionData> implements RegionSelector<REGION, DATA> {

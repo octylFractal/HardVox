@@ -5,10 +5,10 @@ import java.util.Optional;
 import com.flowpowered.math.vector.Vector3i;
 
 import me.kenzierocks.hardvox.Points;
-import me.kenzierocks.hardvox.VecBridge;
 import me.kenzierocks.hardvox.region.BoxRegion;
 import me.kenzierocks.hardvox.region.Region;
 import me.kenzierocks.hardvox.region.data.BoxRegionData;
+import me.kenzierocks.hardvox.vector.VecBridge;
 import net.minecraft.util.EnumFacing;
 
 public class BoxRegionSelector extends BaseSelector<BoxRegion, BoxRegionData> {
@@ -81,7 +81,7 @@ public class BoxRegionSelector extends BaseSelector<BoxRegion, BoxRegionData> {
 
     @Override
     public Optional<BoxRegion> getRegion() {
-        return isRegionDefined() ? Optional.empty() : Optional.of(region);
+        return isRegionDefined() ? Optional.of(region) : Optional.empty();
     }
 
     @Override

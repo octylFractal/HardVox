@@ -27,7 +27,7 @@ class IntArg extends BaseArg<Integer> {
     private static final IntPredicate BASE_16 = BASE_10.or(
             cp -> ('a' <= cp && cp <= 'f') || 'A' <= cp && cp <= 'F');
 
-    public IntArg(String name) {
+    IntArg(String name) {
         super(name);
     }
 
