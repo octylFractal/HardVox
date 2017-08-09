@@ -1,7 +1,11 @@
 package me.kenzierocks.hardvox.operation;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -24,8 +28,10 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.property.IExtendedBlockState;
+import net.minecraftforge.common.property.IUnlistedProperty;
 
-public class BlockStateDelegate implements IBlockState {
+public class BlockStateDelegate implements IBlockState, IExtendedBlockState {
 
     protected final IBlockState delegate;
 
@@ -290,6 +296,49 @@ public class BlockStateDelegate implements IBlockState {
     @Override
     public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, BlockPos pos, EnumFacing facing) {
         return delegate.getBlockFaceShape(worldIn, pos, facing);
+    }
+
+    // IExtendedBlockState interface
+
+    private <T> T iebsValue(Function<IExtendedBlockState, T> func, T defaultValue) {
+        if (delegate instanceof IExtendedBlockState) {
+            return func.apply((IExtendedBlockState) delegate);
+        }
+        return defaultValue;
+    }
+
+    private <T> T iebsThrow(Function<IExtendedBlockState, T> func, Supplier<RuntimeException> ex) {
+        if (delegate instanceof IExtendedBlockState) {
+            return func.apply((IExtendedBlockState) delegate);
+        }
+        throw ex.get();
+    }
+
+    @Override
+    public Collection<IUnlistedProperty<?>> getUnlistedNames() {
+        return iebsValue(IExtendedBlockState::getUnlistedNames, Collections.emptyList());
+    }
+
+    @Override
+    public <V> V getValue(IUnlistedProperty<V> property) {
+        return iebsThrow(iebs -> iebs.getValue(property),
+                () -> new IllegalArgumentException("Cannot get unlisted property " + property + " as it does not exist in " + getBlock().getBlockState()));
+    }
+
+    @Override
+    public <V> IExtendedBlockState withProperty(IUnlistedProperty<V> property, V value) {
+        return iebsThrow(iebs -> iebs.withProperty(property, value),
+                () -> new IllegalArgumentException("Cannot set unlisted property " + property + " as it does not exist in " + getBlock().getBlockState()));
+    }
+
+    @Override
+    public ImmutableMap<IUnlistedProperty<?>, Optional<?>> getUnlistedProperties() {
+        return iebsValue(IExtendedBlockState::getUnlistedProperties, ImmutableMap.of());
+    }
+
+    @Override
+    public IBlockState getClean() {
+        return iebsValue(IExtendedBlockState::getClean, delegate);
     }
 
 }

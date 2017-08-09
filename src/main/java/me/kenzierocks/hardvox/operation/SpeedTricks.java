@@ -31,7 +31,7 @@ class SpeedTricks {
             return state().getLightOpacity(world, pos);
         }
 
-        @SuppressWarnings("deprecation")
+        @Deprecated
         @Override
         public int getLightOpacity() {
             return state().getLightOpacity();
@@ -42,7 +42,7 @@ class SpeedTricks {
             return state().getLightValue(world, pos);
         }
 
-        @SuppressWarnings("deprecation")
+        @Deprecated
         @Override
         public int getLightValue() {
             return state().getLightValue();

@@ -2,12 +2,12 @@ package me.kenzierocks.hardvox.vector;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import me.kenzierocks.hardvox.block.BlockData;
 import me.kenzierocks.hardvox.vector.VMShared.Vec;
 
@@ -74,10 +74,10 @@ public class OptimizedVectorMap<V> implements MutableVectorMap<V>, SerializableV
 
     }
 
-    private final Map<Vec, V> delegate;
+    private final Object2ObjectOpenCustomHashMap<Vec, V> delegate;
 
     private OptimizedVectorMap(int initialSize) {
-        delegate = new HashMap<>(initialSize);
+        delegate = new Object2ObjectOpenCustomHashMap<>(initialSize, VMShared.VEC_HASH_STRATEGY);
     }
 
     @Override

@@ -3,6 +3,8 @@ hardvox.config.entry.wand.selection=Selection Wand
 
 hardvox.config.title.operations=Operations
 hardvox.config.entry.operations.pertick=Operations Per Tick
+hardvox.config.entry.operations.permessage=Operations Per Message
+hardvox.config.entry.operations.printstages=Print Stages?
 
 hardvox.config.title.debug=Debug Options
 

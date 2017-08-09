@@ -1,5 +1,9 @@
 package me.kenzierocks.hardvox.vector;
 
+import java.util.Objects;
+
+import it.unimi.dsi.fastutil.Hash.Strategy;
+
 class VMShared {
 
     static final class Vec {
@@ -16,7 +20,7 @@ class VMShared {
 
         @Override
         public int hashCode() {
-            return (x * 1301081) ^ (y * 15487309) ^ (z * 746773);
+            return hash(x, y, z);
         }
 
         @Override
@@ -32,6 +36,19 @@ class VMShared {
         }
 
     }
+
+    static final Strategy<Vec> VEC_HASH_STRATEGY = new Strategy<VMShared.Vec>() {
+
+        @Override
+        public int hashCode(Vec o) {
+            return o.hashCode();
+        }
+
+        @Override
+        public boolean equals(Vec a, Vec b) {
+            return Objects.equals(a, b);
+        }
+    };
 
     static int hash(int x, int y, int z) {
         return (x * 1301081) ^ (y * 15487309) ^ (z * 746773);

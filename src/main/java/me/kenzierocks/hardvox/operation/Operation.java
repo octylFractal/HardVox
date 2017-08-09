@@ -5,6 +5,7 @@ import me.kenzierocks.hardvox.region.chunker.RegionChunk.PositionIterator;
 import me.kenzierocks.hardvox.vector.MutableVectorMap;
 import me.kenzierocks.hardvox.vector.VectorMap;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 
 /**
  * A phase of a region change. Each operation handles specific block placement
@@ -12,6 +13,8 @@ import net.minecraft.world.World;
  */
 public interface Operation {
 
-    int performOperation(PositionIterator chunk, World world, VectorMap<BlockData> blockMap, MutableVectorMap<Boolean> hitStore);
+    String getName();
+
+    int performOperation(PositionIterator chunk, World world, Chunk c, VectorMap<BlockData> blockMap, MutableVectorMap<Boolean> hitStore);
 
 }

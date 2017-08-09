@@ -41,6 +41,10 @@ public final class HardVoxConfig {
         @Config.LangKey(HardVox.MODID + ".config.entry.operations.permessage")
         public int operationsPerMessage = 100000;
 
+        @Config.Comment("Print stages after completion?")
+        @Config.LangKey(HardVox.MODID + ".config.entry.operations.printstages")
+        public boolean printStages = false;
+
         private Operations() {
         }
 
