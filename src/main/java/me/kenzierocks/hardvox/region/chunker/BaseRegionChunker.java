@@ -64,17 +64,24 @@ public abstract class BaseRegionChunker<REGION extends Region> implements Region
 
     }
 
-    private static final class BoundBaseRC implements BoundRegionChunker {
+    private static final class BoundBaseRC<REGION extends Region> implements BoundRegionChunker<REGION> {
 
+        private final REGION region;
         private final RCCreator creator;
 
-        BoundBaseRC(RCCreator creator) {
+        BoundBaseRC(REGION region, RCCreator creator) {
+            this.region = region;
             this.creator = creator;
         }
 
         @Override
         public RegionChunk getChunk(int x, int y, int z) {
             return creator.chunk(x, z);
+        }
+
+        @Override
+        public REGION getRegion() {
+            return region;
         }
 
     }
@@ -131,8 +138,8 @@ public abstract class BaseRegionChunker<REGION extends Region> implements Region
     }
 
     @Override
-    public BoundRegionChunker bind(REGION region) {
-        return new BoundBaseRC(getRCCreator(region));
+    public BoundRegionChunker<REGION> bind(REGION region) {
+        return new BoundBaseRC<>(region, getRCCreator(region));
     }
 
     /**

@@ -1,6 +1,6 @@
 package me.kenzierocks.hardvox;
 
-import net.minecraft.command.ICommandSender;
+import me.kenzierocks.hardvox.session.HVSession;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
@@ -16,7 +16,7 @@ public class Texts {
         return new TextComponentString(messageText).setStyle(new Style().setColor(TextFormatting.RED));
     }
 
-    public static void error(ICommandSender target, Throwable e) {
+    public static void error(HVSession target, Throwable e) {
         String msg = "An unexpected error occured, check the server console: " + e.getMessage();
         e.printStackTrace();
         target.sendMessage(hardVoxError(msg));

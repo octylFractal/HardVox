@@ -105,4 +105,9 @@ public class OptimizedVectorMap<V> implements MutableVectorMap<V>, SerializableV
         return delegate.size();
     }
 
+    @Override
+    public void clear() {
+        delegate.clear();
+    }
+
 }

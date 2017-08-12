@@ -7,6 +7,7 @@ import com.google.common.collect.Iterators;
 import me.kenzierocks.hardvox.commands.CommandModule;
 import me.kenzierocks.hardvox.commands.op.OperationCommands;
 import me.kenzierocks.hardvox.commands.region.RegionCommands;
+import me.kenzierocks.hardvox.commands.session.SessionCommands;
 import me.kenzierocks.hardvox.region.SelectionListener;
 import me.kenzierocks.hardvox.session.SessionManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -51,7 +52,8 @@ public class HardVox {
     public void serverStarting(FMLServerStartingEvent event) {
         Iterator<CommandModule> modules = Iterators.forArray(
                 new RegionCommands(),
-                new OperationCommands());
+                new OperationCommands(),
+                new SessionCommands());
         modules.forEachRemaining(m -> m.addCommands(event::registerServerCommand));
     }
 
@@ -59,7 +61,7 @@ public class HardVox {
     public void serverStopping(FMLServerStoppingEvent event) {
         // cancel running tasks
         SessionManager.getInstance().getAllSessions().forEachRemaining(sess -> {
-            sess.operationManager.cancelTasks();
+            sess.taskManager.cancelTasks();
         });
         SessionManager.getInstance().clearAllSessions();
     }

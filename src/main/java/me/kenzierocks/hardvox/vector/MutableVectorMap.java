@@ -15,5 +15,7 @@ public interface MutableVectorMap<V> extends VectorMap<V> {
     }
 
     void delete(int x, int y, int z);
+    
+    void clear();
 
 }

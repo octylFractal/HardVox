@@ -16,7 +16,7 @@ public class HVSharedProxy {
     public void onTick(ServerTickEvent event) {
         if (event.phase == Phase.START) {
             SessionManager.getInstance().getAllSessions().forEachRemaining(sess -> {
-                sess.operationManager.runTasks();
+                sess.taskManager.runTasks();
             });
         }
     }

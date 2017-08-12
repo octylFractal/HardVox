@@ -30,7 +30,7 @@ public final class HardVoxConfig {
     public static class Operations {
 
         @Config.Comment("Number of operations per tick, per session.")
-        @Config.RangeInt(min = 0)
+        @Config.RangeInt(min = 1)
         @Config.LangKey(HardVox.MODID + ".config.entry.operations.pertick")
         public int operationsPerTick = 10000;
 
@@ -45,13 +45,29 @@ public final class HardVoxConfig {
         @Config.LangKey(HardVox.MODID + ".config.entry.operations.printstages")
         public boolean printStages = false;
 
+        @Config.Comment("Number of blocks per tick for delayed lighting, per chunk.")
+        @Config.RangeInt(min = 1)
+        @Config.LangKey(HardVox.MODID + ".config.entry.dlight.blocks.pertick")
+        public int delayedLightingBlocksPerTick = 1024;
+
         private Operations() {
         }
 
     }
 
-    @Config.LangKey(HardVox.MODID + ".config.title.debug")
-    public static final Debug debug = new Debug();
+    @Config.LangKey(HardVox.MODID + ".config.title.messages")
+    public static final Messages messages = new Messages();
+    
+    public static class Messages {
+
+        @Config.Comment("Print relight task messages?")
+        @Config.LangKey(HardVox.MODID + ".config.entry.messages.relighttask")
+        public boolean relightTask = true;
+        
+    }
+
+    // @Config.LangKey(HardVox.MODID + ".config.title.debug")
+    // public static final Debug debug = new Debug();
 
     public static class Debug {
 

@@ -29,8 +29,16 @@ public final class CommandArguments {
         return new BlockPatternArg(name);
     }
 
+    public static CommandArgument<AccessAction> accessAction() {
+        return EnumArg.create(AccessAction.class);
+    }
+
     public static CommandArgument<Boolean> flag(String name) {
         return new FlagArg(name);
+    }
+
+    public static CommandArgument<EBool> onOff(String name) {
+        return EnumArg.create(EBool.class, name);
     }
 
     private CommandArguments() {

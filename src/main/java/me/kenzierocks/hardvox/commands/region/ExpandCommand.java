@@ -1,5 +1,6 @@
 package me.kenzierocks.hardvox.commands.region;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.OptionalInt;
 import java.util.stream.Stream;
@@ -47,7 +48,8 @@ public class ExpandCommand extends HVCommand {
 
         @Override
         public Iterator<String> getCompletions(ArgumentContext context) {
-            return Iterators.concat(delegate.getCompletions(context),
+            Iterator<String> dc = delegate.validText(context) ? delegate.getCompletions(context) : Collections.emptyIterator();
+            return Iterators.concat(dc,
                     Stream.of("vert").filter(s -> s.startsWith(context.text)).iterator());
         }
 

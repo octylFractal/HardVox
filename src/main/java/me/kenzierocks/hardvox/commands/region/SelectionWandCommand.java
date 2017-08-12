@@ -26,13 +26,13 @@ public class SelectionWandCommand extends HVCommand {
 
         if (e instanceof EntityPlayer) {
             if (((EntityPlayer) e).addItemStackToInventory(new ItemStack(HardVoxConfig.getSelectionWand()))) {
-                session.owner.sendMessage(Texts.hardVoxMessage("Added ONE (1) selection wand."));
+                session.sendMessage(Texts.hardVoxMessage("Added ONE (1) selection wand."));
             } else {
                 throw new CommandException("It looks like your inventory is full.");
             }
             return;
         }
-        session.owner.sendMessage(Texts.hardVoxError("Hey! You're not a player! Have 128 wands."));
+        session.sendMessage(Texts.hardVoxError("Hey! You're not a player! Have 128 wands."));
         // suprise! you get so many wands!
         for (int i = 0; i < 128; i++) {
             e.dropItem(HardVoxConfig.getSelectionWand(), 1);

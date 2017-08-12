@@ -71,7 +71,7 @@ class IntArg extends BaseArg<Integer> {
                 if (t.startsWith("0")) {
                     return false;
                 }
-                return t.codePoints().skip(1).allMatch(BASE_10);
+                return t.codePoints().allMatch(BASE_10);
         }
     }
 

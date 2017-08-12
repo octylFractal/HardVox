@@ -43,4 +43,8 @@ public class OverlayVectorMap<V> implements MutableVectorMap<V> {
         overlay.put(x, y, z, Optional.empty());
     }
 
+    @Override
+    public void clear() {
+        throw new UnsupportedOperationException();
+    }
 }

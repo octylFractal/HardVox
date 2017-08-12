@@ -72,12 +72,13 @@ public abstract class HVCommand extends CommandBase {
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+        HVSession session = SessionManager.getInstance().getSession(server, sender);
         try {
             CommandArgSet argSet = this.parser.parse(getUsage(sender), new ParserContext(server, sender, null, args));
             if (argSet == null) {
                 throw new CommandException("Something is wrong!");
             }
-            execute(SessionManager.getInstance().getSession(server, sender), argSet);
+            execute(session, argSet);
         } catch (IllegalArgumentException e) {
             throw new CommandException(e.getMessage());
         } catch (WrongUsageException | UncheckedWUE e) {
@@ -85,7 +86,7 @@ public abstract class HVCommand extends CommandBase {
             // (or WUE with an empty string) to have it filled
             if (Strings.isNullOrEmpty(e.getMessage()) || (e instanceof UncheckedWUE)) {
                 if (e instanceof UncheckedWUE) {
-                    sender.sendMessage(Texts.hardVoxError(((UncheckedWUE) e).getExtraErrorText()));
+                    session.sendMessage(Texts.hardVoxError(((UncheckedWUE) e).getExtraErrorText()));
                 }
                 WrongUsageException copy = new WrongUsageException(getUsage(sender));
                 copy.setStackTrace(e.getStackTrace());

@@ -30,12 +30,12 @@ public class SetBlockCommand extends HVCommand {
                 try {
                     setBlock(session, vm);
                 } catch (Throwable e) {
-                    Texts.error(session.owner, e);
+                    Texts.error(session, e);
                 }
             });
         }).exceptionally(t -> {
             session.server.addScheduledTask(() -> {
-                Texts.error(session.owner, t);
+                Texts.error(session, t);
             });
             return null;
         });

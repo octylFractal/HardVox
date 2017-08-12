@@ -5,6 +5,7 @@ import java.util.Objects;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import me.kenzierocks.hardvox.block.BlockData;
+import me.kenzierocks.hardvox.region.Region;
 import me.kenzierocks.hardvox.region.chunker.RegionChunk.PositionIterator;
 import me.kenzierocks.hardvox.vector.MutableVectorMap;
 import me.kenzierocks.hardvox.vector.VectorMap;
@@ -16,6 +17,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 public class OpSetBasicBlock implements Operation {
 
@@ -30,30 +32,38 @@ public class OpSetBasicBlock implements Operation {
     }
 
     @Override
-    public int performOperation(PositionIterator chunk, World world, Chunk c, VectorMap<BlockData> blockMap, MutableVectorMap<Boolean> hitMap) {
+    public int performOperation(Region region, PositionIterator chunk, World world, Chunk c, VectorMap<BlockData> blockMap,
+            MutableVectorMap<IBlockState> hitMap) {
         return chunk.forEachRemaining((x, y, z) -> {
-            if (hitMap.get(x, y, z).orElse(false)) {
+            if (hitMap.get(x, y, z).isPresent()) {
                 return 0;
             }
 
-            BlockPos pos = new BlockPos(x, y, z);
+            ExtendedBlockStorage ebs = c.getBlockStorageArray()[y >> 4];
+            if (ebs == Chunk.NULL_BLOCK_STORAGE) {
+                ebs = new ExtendedBlockStorage(y >> 4 << 4, world.provider.hasSkyLight());
+                c.getBlockStorageArray()[y >> 4] = ebs;
+            }
+            int ex = x & 15;
+            int ey = y & 15;
+            int ez = z & 15;
+
             BlockData block = blockMap.get(x, y, z).orElse(BlockData.AIR);
-            IBlockState oldState = c.getBlockState(pos);
+            IBlockState oldState = ebs.get(ex, ey, ez);
             if (oldState.equals(block.basicState)) {
                 // we don't deal with nbt, return!
                 return 0;
             }
+            BlockPos pos = new BlockPos(x, y, z);
             if (!isBasicBlock(world, pos, block.basicState)) {
                 // not ours either!
                 return 0;
             }
-            hitMap.put(x, y, z, Boolean.TRUE);
+            hitMap.put(x, y, z, oldState);
 
-            if (c.setBlockState(pos, block.basicState) == null) {
-                return 0;
-            }
-            // just send it to the client, updates come at the end
-            world.markAndNotifyBlock(pos, c, oldState, block.basicState, 2 | 16);
+            // set it in the EBS arrays to avoid many unwanted slowdowns
+            // we'll handle all of them in another op
+            ebs.set(ex, ey, ez, block.basicState);
             return 1;
         });
     }
@@ -66,7 +76,7 @@ public class OpSetBasicBlock implements Operation {
         if (nonBasicBlocks.contains(stateId)) {
             return false;
         }
-        boolean result = !s.canProvidePower() && !s.hasComparatorInputOverride()
+        boolean result = !s.getBlock().hasTileEntity(s) && !s.canProvidePower() && !s.hasComparatorInputOverride()
                 && s.getProperties().entrySet().stream().allMatch(e -> allowedProperty(e.getKey()));
 
         if (result) {

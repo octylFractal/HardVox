@@ -76,13 +76,17 @@ public class CommandParser {
     public CommandArgSet parse(String usage, ParserContext context) throws CommandException {
         ImmutableMap.Builder<CommandArgument<?>, Object> argMap = ImmutableMap.builder();
         if (context.text.length < optionalDivisor) {
-            context.sender.sendMessage(Texts.hardVoxError("Not enough arguments provided."));
+            if (context.sender.sendCommandFeedback()) {
+                context.sender.sendMessage(Texts.hardVoxError("Not enough arguments provided."));
+            }
             throw new WrongUsageException(usage);
         }
         for (int i = 0, argI = 0; i < context.text.length; i++, argI++) {
             CommandArgument<?> arg = arg(argI);
             if (arg == null) {
-                context.sender.sendMessage(Texts.hardVoxError("Not enough arguments provided."));
+                if (context.sender.sendCommandFeedback()) {
+                    context.sender.sendMessage(Texts.hardVoxError("Not enough arguments provided."));
+                }
                 throw new WrongUsageException(usage);
             }
             ArgumentContext argCtx = context.contextAt(i);

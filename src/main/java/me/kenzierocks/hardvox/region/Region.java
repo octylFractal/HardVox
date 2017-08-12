@@ -51,5 +51,10 @@ public interface Region {
      * Shifts the region by {@code vector}.
      */
     void shift(Vector3i vector);
+    
+    /**
+     * Creates a copy of this region.
+     */
+    Region copy();
 
 }

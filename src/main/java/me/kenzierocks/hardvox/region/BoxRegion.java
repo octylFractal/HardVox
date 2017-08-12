@@ -82,5 +82,10 @@ public class BoxRegion implements Region {
         pos1 = pos1.add(vector);
         pos2 = pos2.add(vector);
     }
+    
+    @Override
+    public BoxRegion copy() {
+        return new BoxRegion(pos1, pos2);
+    }
 
 }

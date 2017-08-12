@@ -1,5 +1,7 @@
 package me.kenzierocks.hardvox.session;
 
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.IntStream;
@@ -12,6 +14,7 @@ import me.kenzierocks.hardvox.block.BlockData;
 import me.kenzierocks.hardvox.net.HardVoxPackets;
 import me.kenzierocks.hardvox.net.SelectionMessage;
 import me.kenzierocks.hardvox.operation.OperationManager;
+import me.kenzierocks.hardvox.operation.TaskManager;
 import me.kenzierocks.hardvox.region.Region;
 import me.kenzierocks.hardvox.region.chunker.RegionChunker;
 import me.kenzierocks.hardvox.region.chunker.RegionChunkers;
@@ -23,6 +26,7 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 
 public class HVSession {
@@ -30,6 +34,11 @@ public class HVSession {
     public final MinecraftServer server;
     public final ICommandSender owner;
     public final OperationManager operationManager;
+    public final TaskManager taskManager;
+    public final Set<SessionFlag> flags = EnumSet.allOf(SessionFlag.class);
+    {
+        flags.removeIf(sf -> !sf.onByDefault);
+    }
     public World world;
     public RegionSelector<?, ?> regionSelector = new BoxRegionSelector();
 
@@ -37,6 +46,8 @@ public class HVSession {
         this.server = server;
         this.owner = owner;
         world = owner.getEntityWorld();
+        this.taskManager = new TaskManager();
+        // op man must be last
         this.operationManager = new OperationManager(this);
     }
 
@@ -50,8 +61,14 @@ public class HVSession {
     public void performRegionCommand(Function<RegionSelector<?, ?>, String> commandAction) {
         String msg = commandAction.apply(regionSelector);
         if (!msg.isEmpty()) {
-            owner.sendMessage(Texts.hardVoxMessage(msg));
+            sendMessage(Texts.hardVoxMessage(msg));
             maybeSendUpdates();
+        }
+    }
+
+    public void sendMessage(ITextComponent message) {
+        if (owner.sendCommandFeedback()) {
+            owner.sendMessage(message);
         }
     }
 
@@ -63,15 +80,12 @@ public class HVSession {
     }
 
     public void performOperationCommand(VectorMap<BlockData> blockMap) throws CommandException {
-        if (operationManager.isRunningOperation()) {
-            throw new CommandException("An operation is already running.");
-        }
         performFullRegionCommand(region -> {
             Region r = region.getRegion().get();
             runOperation(r, blockMap).thenAccept(totalOps -> {
-                owner.sendMessage(Texts.hardVoxMessage("Operation completed! " + totalOps + " operation(s) performed!"));
+                sendMessage(Texts.hardVoxMessage("Operation completed! " + totalOps + " operation(s) performed!"));
             }).exceptionally(e -> {
-                Texts.error(owner, e);
+                Texts.error(this, e);
                 return null;
             });
             return "Running operation, please wait...";
@@ -79,7 +93,8 @@ public class HVSession {
     }
 
     public CompletableFuture<Integer> runOperation(Region region, VectorMap<BlockData> blockMap) {
-        RegionChunker.BoundRegionChunker rc = RegionChunkers.forRegion(region).bind(region);
+        region = region.copy();
+        RegionChunker.BoundRegionChunker<?> rc = RegionChunkers.forRegion(region).bind(region);
         Vector3i min = VecBridge.toChunk(region.getMinimum());
         Vector3i max = VecBridge.toChunk(region.getMaximum());
         Stream<Vector3i> vectors = IntStream.rangeClosed(min.getX(), max.getX())
